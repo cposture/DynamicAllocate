@@ -206,68 +206,59 @@ void addNext(MemoryBlock* node_next,MemoryBlock *node)
 
 bool MemoryRelease(MemoryAllo &un)
 {
-	MemoryBlock *m,*release,*pre,*temp;
+    MemoryBlock *release, *temp;
 
-	release = findAllo(un);
-	if(release == NULL) 
-		return false;
-	deleteNode(release,g_allomenory);
-	
-	release->state = FREE;
-	if(g_freememory == NULL)
-	{
-		addFirst(release,g_freememory);
-		return true;
-	}
-	
-	m = g_freememory;
-	while(m)
-	{
-		if(release->addr > m->addr)
-		{
-			pre = m;
-			m = m->next;
-		}
-		else
-			break;
-	}
-	if(m == g_freememory)
-	{
-		if(g_freememory->addr == release->addr+release->size)
-		{
-			g_freememory->size+=release->size;
-			g_freememory->addr = release->addr;
-			free(release);
-			release = NULL;
-		}
-		else
-		{
-			addFirst(release,g_freememory);
-		}
-		return true;
-	}
-	if(pre->addr+pre->size == release->addr)
-	{
-		pre->size+=release->size;
-		free(release);
-		release = pre;
-	}
-	else
-	{
-		addNext(pre,release);
-	}
+    release = findAllo(un);
+    if (release == NULL)
+        return false;
 
-	MemoryBlock* n = release->next;
-	if(n && release->addr+release->size == n->addr)
-	{
-		release->size += n->size;
-		temp = n->next;
-		deleteNode(n,g_freememory);
-		addPre(release,temp);
-		free(n);
-		n = NULL;
-	}
-	return true;
+    deleteNode(release, g_allomenory);
+    release->state = FREE;
+
+    MemoryBlock *m, *pre;
+    m = g_freememory;
+    pre = NULL;
+    while (m)
+    {
+        if (release->addr > m->addr)
+        {
+            pre = m;
+            m = m->next;
+        }
+        else
+            break;
+    }
+    if (pre)
+    {
+        if (pre->addr + pre->size == release->addr)
+        {
+            pre->size += release->size;
+            free(release);
+            deleteNode(pre, g_freememory);
+            release = pre;
+        }
+    }
+    else
+    {
+        if (m)
+        {
+            if (release->addr + realease->size == m->addr)
+            {
+                m->size += release->size;
+                m->addr = releaase->addr;
+                free(release);
+            }
+            else
+            {
+                addPre(release, m);
+            }
+        }
+        else
+        {
+            addFirst(release, g_freememory);
+        }
+    }
+    return true;
 }
 
 void initMemory(unsigned long long size)
